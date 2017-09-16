@@ -19,11 +19,14 @@ var playery_vel = 1;
 
 
 var key = {};
-var maxspeed = 6;
+var maxspeed = 4;
 var background_array = [[60,40,'g']];
 var shootie_array = [];
 var biomesize = 500;
-var bulletlife = 2;
+var bulletlife = 90;
+var bulletspeed = 6;
+var bcd = 30;
+var bullettimer = 0;
 
   window.onload = function(){
   
@@ -82,24 +85,33 @@ var bulletlife = 2;
 	
 	playerx += playerx_vel;
 	playery += playery_vel;
+	
+	if (bullettimer > 0) {
+	 bullettimer -= 1;
+	 } else {
+	 console.log("reset");
+	 }
   
   }
   
   function shoot(direction){
-  
-  switch (direction) {
-	case 'up':
-	shootie_array.push([0,-5,playerx+399,playery+299,bulletlife*60/framerate]);
-	break;
-	case 'down':
-	shootie_array.push([0,5,playerx+399,playery+299,bulletlife*60/framerate]);
-	break;
-	case 'right':
-	shootie_array.push([5,0,playerx+399,playery+299,bulletlife*60/framerate]);
-	break;
-	case 'left':
-	shootie_array.push([-5,0,playerx+399,playery+299,bulletlife*60/framerate]);
-	break;
+    if (bullettimer < 2) {
+	  switch (direction) {
+
+		case 'up':
+		shootie_array.push([0,-bulletspeed,playerx+399,playery+299,bulletlife*60/framerate]);
+		break;
+		case 'down':
+		shootie_array.push([0,bulletspeed,playerx+399,playery+299,bulletlife*60/framerate]);
+		break;
+		case 'right':
+		shootie_array.push([bulletspeed,0,playerx+399,playery+299,bulletlife*60/framerate]);
+		break;
+		case 'left':
+		shootie_array.push([-bulletspeed,0,playerx+399,playery+299,bulletlife*60/framerate]);
+		break;
+	  }
+	  bullettimer = bcd;
   }
 	
   }
@@ -121,7 +133,10 @@ var bulletlife = 2;
 		shootie_array[x][2] += shootie_array[x][0];
 		shootie_array[x][3] += shootie_array[x][1];
 		shootie_array[x][4] -= 1;
-		canvasContext.fillRect(shootie_array[x][2] - playerx, shootie_array[x][3] - playery,2,2);
+		if (shootie_array[x][4] < 0) {
+			shootie_array.splice(x, 1);
+		}
+		canvasContext.fillRect(shootie_array[x][2] - playerx, shootie_array[x][3] - playery,3,3);
 	}
 	
   }
