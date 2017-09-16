@@ -1,0 +1,146 @@
+<HTML>
+<head>
+</head>
+<body>
+<canvas id="gameCanvas" width="800px" height="600px" onclick="clicked()" tabindex="0"></canvas>
+<script>
+var canvas;
+var canvasContext;
+var framerate = 60;
+canvas = document.getElementById('gameCanvas');
+canvasContext = canvas.getContext('2d');
+canvas.focus();
+canvas.tabIndex = 0;
+
+var playerx = 20;
+var playery = 20;
+var playerx_vel = 1;
+var playery_vel = 1;
+
+
+var key = {};
+var maxspeed = 6;
+var background_array = [[60,40,'g']];
+var shootie_array = [];
+var biomesize = 500;
+var bulletlife = 2;
+
+  window.onload = function(){
+  
+	loadGame();
+	setInterval(game,1000/framerate);
+  }
+  
+  function loadGame(){
+  
+  for (var i = 0; i < 75; i ++) {
+	background_array[i] = [(Math.random()*biomesize*2) - biomesize,(Math.random()*biomesize*2) - biomesize,"g"];
+  }
+  }
+  
+  canvas.onkeydown = canvas.onkeyup = function(e){
+    var e = e || event;
+    key[e.keyCode] = e.type == 'keydown';
+  };
+  
+  function game(){
+	
+	playerpos();
+	draw();
+	keyPush();
+	
+  }
+  
+  function playerpos() {
+	
+	if (playerx_vel < 0) {
+		if (playerx_vel < -maxspeed) {
+			playerx_vel = -maxspeed;
+		} else {
+			playerx_vel += 0.5;
+		}
+	} else if (playerx_vel > 0) {
+		if (playerx_vel > maxspeed) {
+			playerx_vel = +maxspeed;
+		} else {
+			playerx_vel -= 0.5;
+		}
+	}
+	if (playery_vel < 0) {
+		if (playery_vel < -maxspeed) {
+			playery_vel = -maxspeed;
+		} else {
+			playery_vel += 0.5;
+		}
+	} else if (playery_vel > 0) {
+		if (playery_vel > maxspeed) {
+			playery_vel = +maxspeed;
+		} else {
+			playery_vel -= 0.5;
+		}
+	}
+	
+	playerx += playerx_vel;
+	playery += playery_vel;
+  
+  }
+  
+  function shoot(direction){
+  
+  switch (direction) {
+	case 'up':
+	shootie_array.push([0,-5,playerx+399,playery+299,bulletlife*60/framerate]);
+	break;
+	case 'down':
+	shootie_array.push([0,5,playerx+399,playery+299,bulletlife*60/framerate]);
+	break;
+	case 'right':
+	shootie_array.push([5,0,playerx+399,playery+299,bulletlife*60/framerate]);
+	break;
+	case 'left':
+	shootie_array.push([-5,0,playerx+399,playery+299,bulletlife*60/framerate]);
+	break;
+  }
+	
+  }
+  
+  function draw(){
+	canvasContext.fillStyle = '#9CCC65';
+	canvasContext.fillRect(0,0,canvas.width,canvas.height);
+	
+	canvasContext.fillStyle = '#000000';
+	canvasContext.fillRect(395,295,10,10);
+	
+	for (var i = 0; i < background_array.length; i++) {
+		canvasContext.fillStyle = '#004400';
+		canvasContext.fillRect(background_array[i][0] - playerx, background_array[i][1] - playery,10,10);
+	}
+	
+	for (var x = 0; x < shootie_array.length; x++) {
+		canvasContext.fillStyle = '#202020';
+		shootie_array[x][2] += shootie_array[x][0];
+		shootie_array[x][3] += shootie_array[x][1];
+		shootie_array[x][4] -= 1;
+		canvasContext.fillRect(shootie_array[x][2] - playerx, shootie_array[x][3] - playery,2,2);
+	}
+	
+  }
+  
+  
+  function keyPush(){
+  
+		if (key[68]){playerx_vel += 2;}//move right
+		if (key[65]){playerx_vel -= 2;}//move left
+		
+		if (key[87]){playery_vel -= 2;}//move up
+		if (key[83]){playery_vel += 2;}//move down
+		
+		if (key[40]){shoot('down')}//shoot down
+		if (key[38]){shoot('up')}//shoot up
+		if (key[37]){shoot('left')}//shoot left
+		if (key[39]){shoot('right')}//shoot right
+}
+	
+</script>
+</body>
+</HTML>
