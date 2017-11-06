@@ -1,9 +1,112 @@
 <HTML>
 <head>
+  <link href='http://fonts.googleapis.com/css?family=Ubuntu:bold' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Vollkorn' rel='stylesheet' type='text/css'>
+<style>
+body{
+  background-color: #E0E0E0;
+}
+#bgdiv{
+  position:fixed;
+  top:-5%;
+  left:-5%;
+  width:110%;
+  height:110%;
+  background-image: url("media/background.png");
+  background-size:700px 700px;
+  filter: blur(2px);
+}
+#gameCanvas {
+  position:fixed;
+  top:50px;
+  left: calc(50% - 400px);
+}
+.welcometext {
+  color: #FAFAFA;
+  position: fixed;
+  left: 0;
+  width:100%;
+  top:-100px;
+  text-align: center;
+font-family: 'Lato', sans-serif; font-size: 54px; font-weight: 300; line-height: 58px;	font-size: 50px;
+	line-height: 65px;
+  transition: top 1s;
+  transition-timing-function: ease-in-out;
+}
+#odisp{
+  position: fixed;
+  width: 100%;
+  height:100%;
+  top:0;
+  left:0;
+  background-color: #000000;
+  opacity: 0.8;
+  transition: opacity 1s;
+
+}
+</style>
 </head>
 <body>
-<canvas id="gameCanvas" width="800px" height="600px" onclick="clicked()" tabindex="0"></canvas>
+<div id="bgdiv"></div>
+<canvas id="gameCanvas" width="800px" height="600px" tabindex="0"></canvas>
+
+
+<div id="odisp">
+</div>
+<div id="first" class="welcometext">
+Gavins shitty attempts at a games presents:
+</div>
+<div id="second" class="welcometext">
+Angry Bois With Hats
+</div>
+
 <script>
+function startup(){
+  var center = screen.width - 1550;
+  document.getElementById('first').style.top = 250 + 'px';
+}
+function stg1start(){
+  document.getElementById('first').style.top = '-250px';
+  document.getElementById('second').style.top = 250 + 'px';
+}
+function stg2start(){
+  document.getElementById('odisp').style.opacity = '0';
+  document.getElementById('second').style.top = '-250px';
+}
+function closestart(){
+  document.getElementById('odisp').style.top = '-100%';
+}
+
+</script>
+<script>
+
+playerimg = new Image();
+playerimg.src = 'media/player.png';
+
+players1 = new Image();
+players1.src = 'media/player2.png';
+
+players2 = new Image();
+players2.src = 'media/player3.png';
+
+cactus1 = new Image();
+cactus1.src = 'media/cactus1.png';
+
+cactus2 = new Image();
+cactus2.src = 'media/cactus2.png';
+
+barrel = new Image();
+barrel.src = 'media/barrel.png';
+
+npc1 = new Image();
+npc1.src = 'media/npc1.png';
+
+npc2 = new Image();
+npc2.src = 'media/npc2.png';
+
+npcdead = new Image();
+npcdead.src = 'media/npcdead.png';
+
 var canvas;
 var canvasContext;
 var framerate = 60;
@@ -20,49 +123,141 @@ var playery_vel = 1;
 
 var key = {};
 var maxspeed = 4;
-var background_array = [[60,40,'g']];
+var background_array = [[60,40,1]];
+var npc_array = [[60,40,10,90,1,0]];
 var shootie_array = [];
-var biomesize = 500;
+var badie_array = [];
+var biomesize = 1000;
 var bulletlife = 90;
 var bulletspeed = 6;
 var bcd = 30;
 var bullettimer = 0;
+var npcmpvespeed = 1;
+
+var playerstep = 0;
+var playerstepcount = 0;
+
+var pgmcounter = 0; //------------------------------------------------------- warning nly for use in site
+var ncall = true;
 
   window.onload = function(){
-  
+    startup();
 	loadGame();
 	setInterval(game,1000/framerate);
   }
-  
+
   function loadGame(){
-  
-  for (var i = 0; i < 75; i ++) {
-	background_array[i] = [(Math.random()*biomesize*2) - biomesize,(Math.random()*biomesize*2) - biomesize,"g"];
+  var type = Math.round(Math.random()*2);
+    for (var i = 0; i < 40; i ++) {//spawn background objects
+      type = Math.round(Math.random()*2);
+  	  background_array[i] = [(Math.random()*biomesize*2) - biomesize,(Math.random()*biomesize*2) - biomesize,type];
+    }
+    for (var i = 0; i < 10; i ++) {//spawn npcs
+  	  npc_array[i] = [(Math.random()*biomesize*2) - biomesize,(Math.random()*biomesize*2) - biomesize,(Math.random()*biomesize*2) - biomesize,(Math.random()*biomesize*2) - biomesize,1,0];
+    }
   }
-  }
-  
+
   canvas.onkeydown = canvas.onkeyup = function(e){
     var e = e || event;
     key[e.keyCode] = e.type == 'keydown';
   };
-  
+
   function game(){
-	
+
 	playerpos();
 	draw();
 	keyPush();
-	
+  npc();
+
+if (ncall) {
+
+pgmcounter ++;
+  if (pgmcounter == framerate*2){
+    stg1start();
   }
-  
+  if (pgmcounter == framerate*5){
+    stg2start();
+  }
+  if (pgmcounter > framerate*6){
+    closestart();
+    ncall = false;
+  }
+
+
+}
+}
+
+  function npc() {
+    for (var npci = 0; npci < npc_array.length; npci ++) {
+      npc_array[npci][5] ++;
+      for(var checkb = 0; checkb < shootie_array.length; checkb++) {
+        //console.log(npc_array[npci][0] + " " + shootie_array[checkb][2]);
+        if ((npc_array[npci][0] < shootie_array[checkb][2]) & (npc_array[npci][0] + 33 > shootie_array[checkb][2])){
+          if ((npc_array[npci][1] < shootie_array[checkb][3]) & (npc_array[npci][1] + 48 > shootie_array[checkb][3])){
+            background_array.push([npc_array[npci][0],npc_array[npci][1],3]);
+            npc_array.splice(npci, 1);
+            shootie_array.splice(checkb, 1);
+            if (shootie_array.length == 0){break;}
+          }
+        }
+        if (npc_array.length == 0){break;}
+      }
+      if (npc_array.length == 0){break;}
+      if (npc_array[npci] == undefined){break;}
+      if (npc_array[npci][5] > 10) {//npc takes step
+          npc_array[npci][5] = 0;
+          if (npc_array[npci][4] == 0) {
+            npc_array[npci][4] = 1;
+          } else {
+            npc_array[npci][4] = 0;
+          }
+        }
+
+          if (npc_array[npci][0] < npc_array[npci][2]){
+            npc_array[npci][0] ++;
+            if ((npc_array[npci][0] - npc_array[npci][2]) > -1){
+                npc_array[npci][2] = newdestination();
+            }
+          }else{
+            npc_array[npci][0] --;
+            if ((npc_array[npci][0] - npc_array[npci][2]) < 1){
+                npc_array[npci][2] = newdestination();
+            }
+          }
+
+          if (npc_array[npci][1] < npc_array[npci][3]){
+            npc_array[npci][1] ++;
+            if ((npc_array[npci][1] - npc_array[npci][3]) > -1){
+                npc_array[npci][3] = newdestination();
+            }
+          }else{
+            npc_array[npci][1] --;
+            if ((npc_array[npci][1] - npc_array[npci][3]) < 1){
+                npc_array[npci][3] = newdestination();
+            }
+          }
+
+
+    }
+
+  }
+
+function newdestination(){
+  var newplace = (Math.random()*biomesize);
+  return newplace;
+}
+
   function playerpos() {
-	
+
 	if (playerx_vel < 0) {
+    playerstepcount ++;
 		if (playerx_vel < -maxspeed) {
 			playerx_vel = -maxspeed;
 		} else {
 			playerx_vel += 0.5;
 		}
 	} else if (playerx_vel > 0) {
+    playerstepcount ++;
 		if (playerx_vel > maxspeed) {
 			playerx_vel = +maxspeed;
 		} else {
@@ -70,64 +265,95 @@ var bullettimer = 0;
 		}
 	}
 	if (playery_vel < 0) {
+    playerstepcount ++;
 		if (playery_vel < -maxspeed) {
 			playery_vel = -maxspeed;
 		} else {
 			playery_vel += 0.5;
 		}
 	} else if (playery_vel > 0) {
+    playerstepcount ++;
 		if (playery_vel > maxspeed) {
 			playery_vel = +maxspeed;
 		} else {
 			playery_vel -= 0.5;
 		}
 	}
-	
+
+  if ((playerx_vel == 0) & (playery_vel == 0)) {
+    playerstepcount = 0;
+    playerstep = 0;
+  }
+  if (playerstepcount > 10) {
+    playerstepcount = 0;
+    if (playerstep <= 1) {
+      playerstep ++;
+    } else if (playerstep == 2) {
+      playerstep --;
+    }
+  }
+
 	playerx += playerx_vel;
 	playery += playery_vel;
-	
+
 	if (bullettimer > 0) {
 	 bullettimer -= 1;
-	 } else {
-	 console.log("reset");
 	 }
-  
+
   }
-  
+
   function shoot(direction){
     if (bullettimer < 2) {
 	  switch (direction) {
 
 		case 'up':
-		shootie_array.push([0,-bulletspeed,playerx+399,playery+299,bulletlife*60/framerate]);
+		shootie_array.push([0,-bulletspeed,playerx+410,playery+309,bulletlife*60/framerate]);
 		break;
 		case 'down':
-		shootie_array.push([0,bulletspeed,playerx+399,playery+299,bulletlife*60/framerate]);
+		shootie_array.push([0,bulletspeed,playerx+410,playery+309,bulletlife*60/framerate]);
 		break;
 		case 'right':
-		shootie_array.push([bulletspeed,0,playerx+399,playery+299,bulletlife*60/framerate]);
+		shootie_array.push([bulletspeed,0,playerx+415,playery+316,bulletlife*60/framerate]);
 		break;
 		case 'left':
-		shootie_array.push([-bulletspeed,0,playerx+399,playery+299,bulletlife*60/framerate]);
+		shootie_array.push([-bulletspeed,0,playerx+415,playery+316,bulletlife*60/framerate]);
 		break;
 	  }
 	  bullettimer = bcd;
   }
-	
+
   }
-  
+
   function draw(){
-	canvasContext.fillStyle = '#9CCC65';
+	canvasContext.fillStyle = '#FFE082';
 	canvasContext.fillRect(0,0,canvas.width,canvas.height);
-	
-	canvasContext.fillStyle = '#000000';
-	canvasContext.fillRect(395,295,10,10);
-	
+
+
 	for (var i = 0; i < background_array.length; i++) {
-		canvasContext.fillStyle = '#004400';
-		canvasContext.fillRect(background_array[i][0] - playerx, background_array[i][1] - playery,10,10);
+    switch (background_array[i][2]) {
+    case (0):
+      canvasContext.drawImage(cactus1,background_array[i][0] - playerx, background_array[i][1] - playery,50,50);
+    break;
+    case (1):
+      canvasContext.drawImage(cactus2,background_array[i][0] - playerx, background_array[i][1] - playery,50,50);
+    break;
+    case (2):
+      canvasContext.drawImage(barrel,background_array[i][0] - playerx, background_array[i][1] - playery,40,50);
+    break;
+    case (3):
+      canvasContext.drawImage(npcdead,background_array[i][0] - playerx, background_array[i][1] - playery,40,50);
+    break;
+  }
 	}
-	
+
+  for (var j = 0; j < npc_array.length; j++) {//drawcowboy
+    if (npc_array[j][4] == 1) {
+      canvasContext.drawImage(npc1,npc_array[j][0] - playerx, npc_array[j][1] - playery,35,50);
+    } else {
+      canvasContext.drawImage(npc2,npc_array[j][0] - playerx, npc_array[j][1] - playery,35,50);
+    }
+  }
+
 	for (var x = 0; x < shootie_array.length; x++) {
 		canvasContext.fillStyle = '#202020';
 		shootie_array[x][2] += shootie_array[x][0];
@@ -136,26 +362,34 @@ var bullettimer = 0;
 		if (shootie_array[x][4] < 0) {
 			shootie_array.splice(x, 1);
 		}
+    if (shootie_array.length == 0){break;}
 		canvasContext.fillRect(shootie_array[x][2] - playerx, shootie_array[x][3] - playery,3,3);
 	}
-	
+  if (playerstep == 0){
+    canvasContext.drawImage(playerimg,395,295, 35, 50);
+  } else if(playerstep == 1){
+    canvasContext.drawImage(players1,395,295, 35, 50);
+  } else if(playerstep == 2){
+    canvasContext.drawImage(players2,395,295, 35, 50);
   }
-  
-  
+  }
+
+
   function keyPush(){
-  
+
 		if (key[68]){playerx_vel += 2;}//move right
 		if (key[65]){playerx_vel -= 2;}//move left
-		
+
 		if (key[87]){playery_vel -= 2;}//move up
 		if (key[83]){playery_vel += 2;}//move down
-		
+
 		if (key[40]){shoot('down')}//shoot down
 		if (key[38]){shoot('up')}//shoot up
 		if (key[37]){shoot('left')}//shoot left
 		if (key[39]){shoot('right')}//shoot right
 }
-	
+
 </script>
+<iframe style="display:none;" src="media/music.mp3"></iframe>
 </body>
 </HTML>
